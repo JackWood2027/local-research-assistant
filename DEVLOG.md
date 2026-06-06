@@ -40,3 +40,14 @@ What software do you use right now and what's annoying about it?
 "Nvivo and Atlas.ti are annoying because their security issues."
 What do you want from this project?
 "Secure way to analyze transcript data"
+
+## 2026—06—04 — Hardware spec reasoning
+
+I learned today that the model size will drive the compute of the hardware, not the data size. Being in the stats world for a while, I thought that the price of the hardware would be based on the data size, but it is actually based on the model size. In the LLM world, data is small (prompt only a few KB) and the model is huge. The parameter count (7B vs 30B vs 70B) determines cost. 
+
+I selected the 30B-class model because of these factors: Reliability, sufficient quality, and processing speed not being critical. The most important thing is that the QC review needs to be extremely accurate, so it can't be a small model. The writing quality does not need to be perfect since this end user will revise and edit the drafts. The speed is not critical; this end user has expressed that processing can take a few seconds versus instantaneously. The reason why going all the way to 70B is a mistake is because of the sharp cost cliff between 24GB and 48GB of VRAM. A single consumer GPU tops at ~24GB, going higher means either dual GPUs (extremley complex and expensive) or workstation-class cards. The end user does not want to pay more than $4,000 for this whole project. This means the 24GB VRAM is sufficient for this system. 
+
+I chose the RTX 3090 over RTX 4090 because they both have 24GB VRAM. For our use case, the 4090 isn't a better LLM card in any meaningful way other than the fact that it runs models faster, which is not worth $1000 to the end user. We can save on this  aspect of the project while getting sufficient capability from the 3090. This unlocks a higher budget for the rest of the project, thus making the rest higher quality. 
+
+Both systems were spec'd using the same right-sizing reasoning, but different platform constraints lead to different correct answers. There are two different platforms for this system: end user 1's PC (30B/24GB consumer GPU) and end user 2's MacBook (70B/128GB unified memory). End user 2's 128GB memory fits a 70B model. This model will produce higher-quality writing which benefits their academic work. End user 1 will have a single-consumer-GPU build PC, so 24GB and 30B are the correct targets.  
+
