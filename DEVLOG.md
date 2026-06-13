@@ -61,3 +61,14 @@ The RAM (G.Skill Trident Z5 Neo RGB 64 GB) was chosen because the apps, vector D
 
 There were two risks that were identified on PCPartPicker.com. There was a BIOS update that may be needed (Q-Flash Plus on the motherboard which allows you to flash BIOS from a USB stick without a CPU installed) and RAM clearance with the cooler (might need to raise the fan 4-6mm if needed). Catching these issues at spec time means planning around them. Catching them mid-build means a stalled assembly.
 
+## 2026-06-12 — Scope change:over-build for dual-GPU future option
+
+The stakeholder reviewed the original spec and requested an over-build to preserve future dual-GPU capacity. A 16-core/32-thread CPU, motherboard with x8/x8 PCIe lane splitting, larger PSU sized for two GPUs at peak, and a larger case were all requested. This is not a failure in design — it is normal engineering. The stakeholder wanted something different, and so the computer was re-specified.
+
+There were two components that I made the mistake of overshooting when I selected them, that being the ASUS ROG Crosshair X870E Hero motherboard which was ~$650 and was misidentified originally for having a X670E chipset. The ASUS ProArt X670E-Creator (~$300) meets the requirement of x8/x8 PCIe splitting for future dual-GPUs, and it is not an overshoot. The PSU first pick was the be quiet! Dark Power Pro 13 with Titanium efficiency (~$450), but the SeaSonic PRIME PX-1300 is only ~$350 and is Platinum tier. There is a marginal difference between Platinum and Titanium, so saving $100 is worth it. I felt the pressure to max out every component because the best features are so intriguing, but as an engineer I need to have the discipline to meet the new requirement, not to overshoot it.
+
+The original spec was ~$2,735, and the revised spec is ~$3,375. This increase is to preserve the dual-GPU option, and if another GPU is added then it will be around ~$4,100. That means there is a $640 option premium for future flexibility. If the second GPU ends up being added, then this will be a good investment. 
+
+The stakeholder signed off on the final spec; the motherboard supports immediate single-GPU use and future dual-GPU expansion. The PSU and case are sized for the eventual second GPU as well.
+
+
