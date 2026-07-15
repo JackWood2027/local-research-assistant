@@ -89,4 +89,30 @@ The final build as ordered is: one NVIDIA GeForce RTX 3090 GPU, AMD Ryzen 9 9950
 
 The three biggest takeaways and lessons from picking the parts were markets move between spec and order (as seen with the X670E disappearance) the case was trickier than expected because it had to fit the needs of all the other specs, and verifying the reasoning behind decisions is needed, not just the decisions themselves. 
 
+## 2026-07-13 — GPU acquisition pivot: dual 3090 plan to single 3090 Ti FE
+
+The original plan was to get dual RTX 3090s on the used market to enable the 70B-class model support. Unfortunately, finding two RTX 3090s in good condition in this market for a good price is almost impossible. Instead, a RTX 3090 Ti Founders Edition was purchased, which has worse thermals since it has an extra 100W, but it is slightly faster. A Gigabyte Gaming OC 3090 was evaluated as a candidate for the second card. Its used-market status (potentially mining-run, potentially with original thin thermal pads) drove the design of a stress-testing protocol using gpu-burn, nvtop, and nvidia-smi, intended to validate any used GPU before committing it to the build. The protocol was never used because acquisition pivoted to the 3090 Ti FE before that step, but it's documented and reusable for future GPU purchases.
+
+The VRAM ceiling(24GB) is unchanged with only one 3090. A dual-GPU expansion path is still in the future if one is available on the market for a good price, but the current plan is a single card. The 3090 Ti FE does have 450W versus the expected 350W of a standard 3090. The Corsair HX1500i handles this easily, and the Meshify 2 XL case has plenty of fans to handle the thermal load. The FE pushes air through the card rather than exhausting it into the case. This is worth watching to make sure the thermals are still okay. The $640 option premium documented in the earlier dev log — spent on components sized for future dual-GPU — remains a bet on future flexibility rather than a used capability. The pivot to a single 3090 Ti FE doesn't invalidate the over-build; it just means the flexibility is dormant.
+
+Here are the lessons from this entry: Used-market GPU plan was contingent on finding two good GPUs for a fair price which sounded good on paper, but in practice was very challenging. The pivot to one GPU is appropriate though. The over-build of the rest of the PC still holds value, even without the dual-GPU. It allows for flexibility within the budget for future GPU purchases. Having a stress-testing protocol for the possible GPU options was a good lesson for future GPU acquisitions. 
+
+## 2026-07-14 — PC assembly and Ubuntu installation
+
+The PC assembly is completed. All the parts from the ordered build (Ryzen 9 9950X, Phantom Spirit cooler, Taichi Lite motherboard, Ripjaws S5 RAM, 9100 Pro NVMe, Meshify 2 XL case, HX1500i PSU, three Arctic P14 top exhaust fans) came together well, and the 3090 Ti FE was installed as the single GPU. 
+
+The BIOS was updated to the current version. Unlike the earlier ProArt X670E-Creator plan, which would have required a BIOS update for CPU compatibility with the 9950X, the X870E chipset ships with 9950X support from the factory — so this update was for standard stability and security improvements, not a compatibility fix.
+
+All four subsystems were detected during the BIOS-level hardware verification: CPU (9950X, 16 cores), RAM (64GB, verified at 6000 MT/s after enabling EXPO), storage (Samsung 9100 Pro on the Gen 5 M.2 slot), GPU (display output confirmed during-boot from the 3090 Ti's HDMI).
+
+EXPO enabled to bring RAM to rated 6000 MT/s — without this, the DDR5-6000 kit runs at 4800 MT/s default which would mean the additional speed that was purchased wouldn't be used. This is very important for the RAM speed for the vector database and RAG pipeline. 
+
+Ubuntu 24.04 LTS installed from USB, with the “Try Ubuntu” hardware validation step first. This confirmed CPU, RAM, storage, GPU, and network via the different commands. 
+
+Settings: Interactive installation, Default selection (not Extended — clean install, no bloat), proprietary drivers enabled (NVIDIA driver + media codecs), disk fully erased and installed, no encryption (dedicated stationary machine, not a laptop that travels — encryption adds boot-time password overhead and recovery complexity for minimal real threat model), ext4 file system (installer default), no Active Directory (standalone workstation), location services off (not needed, aligns with privacy-first project ethos), Central time zone, local user account created.
+
+Lessons from this entry: Running the “Try Ubuntu” from USB before committing to the installation was a low-cost check to validate that everything was working correctly. Hypothetically if something was not detected in Linux and this precaution did not take place, there would be serious issues. This habit of validating before committing generalizes beyond PC work. Defaults are usually right for a reason is the next lesson that stands out. Every option came back to picking the simpler options unless there was a specific reason not to, which was rare. The last lesson is that every setting has a workload connection. Enabling EXPO wasn’t just nice to have, it was the difference between the RAM’s full capability versus a cheaper RAM. There would be no point in paying the extra money for the better RAM if this setting was picked. Skipping proprietary drivers would have meant no CUDA. Taking every choice seriously is engineering, not paranoia.
+
+
+
 
