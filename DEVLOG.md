@@ -113,6 +113,12 @@ Settings: Interactive installation, Default selection (not Extended — clean in
 
 Lessons from this entry: Running the “Try Ubuntu” from USB before committing to the installation was a low-cost check to validate that everything was working correctly. Hypothetically if something was not detected in Linux and this precaution did not take place, there would be serious issues. This habit of validating before committing generalizes beyond PC work. Defaults are usually right for a reason is the next lesson that stands out. Every option came back to picking the simpler options unless there was a specific reason not to, which was rare. The last lesson is that every setting has a workload connection. Enabling EXPO wasn’t just nice to have, it was the difference between the RAM’s full capability versus a cheaper RAM. There would be no point in paying the extra money for the better RAM if this setting was picked. Skipping proprietary drivers would have meant no CUDA. Taking every choice seriously is engineering, not paranoia.
 
+## 08-04-2026 — Ubuntu system update
 
+Today the system was updated with the commands apt update, full-upgrade, autoremove, and clean, then the machine rebooted, NVIDIA driver verified functional with nvidia-smi and that was the end. 
+
+The lesson today was that Ubuntu install's proprietary-driver checkbox correctly installed the NVIDIA 595 open driver, thus the apt full=upgrade bumped the driver to 595.84 and installed matching kernel modules. The driver hardware worked on the first reboot. 
+
+The GPU was detected, the VRAM had the correct amount available, idle temp was healthy, power draw at idle 15W, and the driver-level CUDA runtime available at version 13.2
 
 
