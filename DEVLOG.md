@@ -113,12 +113,35 @@ Settings: Interactive installation, Default selection (not Extended — clean in
 
 Lessons from this entry: Running the “Try Ubuntu” from USB before committing to the installation was a low-cost check to validate that everything was working correctly. Hypothetically if something was not detected in Linux and this precaution did not take place, there would be serious issues. This habit of validating before committing generalizes beyond PC work. Defaults are usually right for a reason is the next lesson that stands out. Every option came back to picking the simpler options unless there was a specific reason not to, which was rare. The last lesson is that every setting has a workload connection. Enabling EXPO wasn’t just nice to have, it was the difference between the RAM’s full capability versus a cheaper RAM. There would be no point in paying the extra money for the better RAM if this setting was picked. Skipping proprietary drivers would have meant no CUDA. Taking every choice seriously is engineering, not paranoia.
 
-## 08-04-2026 — Ubuntu system update
+## 2026-08-04 — Ubuntu system update
 
 Today the system was updated with the commands apt update, full-upgrade, autoremove, and clean, then the machine rebooted, NVIDIA driver verified functional with nvidia-smi and that was the end. 
 
 The lesson today was that Ubuntu install's proprietary-driver checkbox correctly installed the NVIDIA 595 open driver, thus the apt full=upgrade bumped the driver to 595.84 and installed matching kernel modules. The driver hardware worked on the first reboot. 
 
 The GPU was detected, the VRAM had the correct amount available, idle temp was healthy, power draw at idle 15W, and the driver-level CUDA runtime available at version 13.2
+
+## 2026-08-05 — [Phase 5] Post-install setup: updates, CUDA, dev tooling, Python 3.12, first venv
+
+The first thing done today was system updates. In the terminal sudo apt update was run and 204 packages were upgradeable. The command sudo apt full-upgrade was completed with 187 upgrades, 9 new installs, 1 removal (an old NVIDIA firmware that was replaced). 17 packages were initially held back but that was resolved with full-upgrade. Autoremove and clean were run shortly after, which was followed by a reboot to apply the kernel/driver updates. This all was verified with the nvidia-smi command and it showed the correct information: Driver 595.84, CUDA runtime 13.2, RTX 3090 Ti detected, 24GB VRAM, healthy idle temps (33 degrees Celsius at 15W, P8 state). 
+
+The installed OS turned out to be Ubuntu 26.04 and not the 24.04 LTS I'd planned. I discovered when the pending updates all came from the resolute-updates repo instead of noble-updates. I found out through lsb_release -a that confirmed 26.04. I chose to keep 26.04 because it works fine and CUDA 12.6 installed from the 24.04 repo is functional even on 26.04. There were 50 packages that wouldn’t upgrade and initially I was confused, but it turned out to be a diagnostic signal that was just phased updates. 
+
+
+The NVIDIA driver runtime supports up to CUDA 13.2; Pytorch's supported CUDA versions on their download page includes 12.6, 13, 13.2, ROCm 7.2, CPU. CUDA toolkit 12.6 was chosen over other 13.X options because it is the mature, well-supported version. Unless there is a specific reason to choose the newest thing out, avoid it. LLM inference doesn't benefit from CUDA 13 improvements, the ecosystem of tutorials, libraries, and troubleshooting is built around 12.X and especially for a first-timer like me. This was installed through NVIDIA's official CUDA repository, rather than Ubuntu's apt package because the latter is often older and not officially supported by NVIDIA for CUDA development work. I ran the install with the -y flag (auto-confirm), which the coaching flagged as a discipline slip — the pause-before-confirming step exists for a reason and I skipped it here. Worth naming so I don't repeat.
+
+CUDA installs to /usr/local/cuda-12.6/ but that is not in the shell's default search path. Appended two export lines to ~/.bashrc. One was for PATH and one was to find CUDA libraries at runtime. Re-sourced .bashrc and verified with nvcc --version which confirmed CUDA 12.6.3 compiler on PATH. 
+
+The dev tooling install was next. There were 17 newly installed packages, which were verified and returned as Python 3.14. 
+
+Python 3.12 was installed alongside Python 3.14 because 3.14 could be too new for the AI/ML ecosystem — some libraries (PyTorch, WhisperX) don't have wheels for 3.14 yet. Discovered during dev tooling install that Ubuntu 26.04 ships Python 3.14 as system Python — surprising, since 3.14 is very new (released October 2025). Deadsnakes PPA was added because Ubuntu did not have python3.12 in the terminal. Deadsnakes is the standard third-party source for alternative Python versions on Ubuntu. It was then installed and verified and the venv module is functional. 
+
+The next step was configuring the git identity, so I linked my profile through user.name and user.email commands and cloned the repo. 32 objects were received which was the expected amount. The first venv was created (python3.12 -m venv .venv). It was activated and the prompt showed (.venv) which confirmed it. The python was then verified with python –version. The .gitignore didn’t show up with the command ls, but I learned that files starting with . are hidden from ls by default. Ls -la shows everything. 
+
+The last step of the day was the first package installed through pip install pandas numpy jupyter and 60+ packages were installed. This was verified via Python REPL, pandas was 3.0.5 and numpy 2.5.1, Upgraded pip from 25.0.1 to 26.2.1.
+
+There were three big lessons/takeaways from today, and the first was picking the slightly older but more reliable choice over the brand new one is actually the right move because there is not an environment for the brand new ones yet. This discipline was shown by selecting CUDA 12.6 over 13.x, and Python 3.12 over 3.14. The next lesson was: verify before committing, you have to double check what is getting deleted or not installing before you press yes. The last lesson was terminal silence isn’t failure. Multiple commands returned no output on success (apt clean, the two export lines). The Linux convention is quiet-means-good, which is different than what I’m used to.
+
+
 
 
