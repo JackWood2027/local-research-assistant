@@ -142,6 +142,19 @@ The last step of the day was the first package installed through pip install pan
 
 There were three big lessons/takeaways from today, and the first was picking the slightly older but more reliable choice over the brand new one is actually the right move because there is not an environment for the brand new ones yet. This discipline was shown by selecting CUDA 12.6 over 13.x, and Python 3.12 over 3.14. The next lesson was: verify before committing, you have to double check what is getting deleted or not installing before you press yes. The last lesson was terminal silence isn’t failure. Multiple commands returned no output on success (apt clean, the two export lines). The Linux convention is quiet-means-good, which is different than what I’m used to.
 
+2026-08-08 —[Phase 3] First pandas session: Jupyter, real data, exploratory analysis
+
+Today was the first time I launched the Jupyter Notebook inside the venv. Pandas and numpy were imported as pd and np respectively. 
+
+My first attempt loading a housing dataset resulted in a 404 error(URL was stale), so I switched to a different well-known dataset mirror (selva86/datasets) and that worked. 
+
+I explored an old Boston Housing dataset: Shape was 506 homes and 14 attributes. I ran .describe() for descriptive statistics on all variables. The mean home value (medv) = 22.53, max = 50 (top-coded). There was a moderate to strong positive correlation between rooms and value at .695. I then filtered the subset: 333 homes with rm > 6, mean medv of subset = 25.16. Next it was grouped by riverfront(chas): 471 non-riverfront (mean 22.09), 35 riverfront (mean 28.44). I found out there was a non-linear pattern by dividing it into 4 groups with pd.cut(), the means were 15,18,24,45. 
+
+The top-coded aspect of this almost certainly means any home above $50,000 was recorded as 50, which will show up in the MLS data later as well. Small subgroups producing noisier estimates was another thing that I noticed today which came straight from AP Stats. Smaller n means wider sampling distribution and more chance for skewed results. 
+
+One causal claim that I made from observational data was "the riverfront is very pricy", when the data showed an association. This is a classic association versus causation distinction from AP stats — you can't conclude causation from observational studies. 
+
+Two lessons today were: AP Stats and R background transferred directly to pandas and reading output is the analysis. Running the command is one thing, but noticing what those numbers mean is the work. This came up repeatedly with subset size, means, and correlation numbers. 
 
 
 
