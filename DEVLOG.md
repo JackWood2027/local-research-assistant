@@ -142,7 +142,7 @@ The last step of the day was the first package installed through pip install pan
 
 There were three big lessons/takeaways from today, and the first was picking the slightly older but more reliable choice over the brand new one is actually the right move because there is not an environment for the brand new ones yet. This discipline was shown by selecting CUDA 12.6 over 13.x, and Python 3.12 over 3.14. The next lesson was: verify before committing, you have to double check what is getting deleted or not installing before you press yes. The last lesson was terminal silence isn’t failure. Multiple commands returned no output on success (apt clean, the two export lines). The Linux convention is quiet-means-good, which is different than what I’m used to.
 
-2026-08-08 —[Phase 3] First pandas session: Jupyter, real data, exploratory analysis
+## 2026-08-08 —[Phase 3] First pandas session: Jupyter, real data, exploratory analysis
 
 Today was the first time I launched the Jupyter Notebook inside the venv. Pandas and numpy were imported as pd and np respectively. 
 
@@ -156,5 +156,18 @@ One causal claim that I made from observational data was "the riverfront is very
 
 Two lessons today were: AP Stats and R background transferred directly to pandas and reading output is the analysis. Running the command is one thing, but noticing what those numbers mean is the work. This came up repeatedly with subset size, means, and correlation numbers. 
 
+## 2026-08-09 — [Phase 3] Messy data cleaning: Titanic dataset
+
+This was the second Jupyter session on the PC. I loaded the Titanic dataset from a public GitHub mirror which is a realistically messy dataset with 891 rows and 12 columns. Commands were run to diagnose the data before cleaning it. 
+
+I learned the language of "dtypes" or data types. int64 is whole numbers, float64 is decimals or NaN values, and object is text or anything pandas cannot categorize. Object usually means it is bad data. This was a preview of MLS data. 
+
+There was missing data in three columns. 77% of the cabin data was missing, 20% of the Age data was missing, and 2 rows had missing Embarked values. I removed the cabin since there was too much missing to be useful, I made the missing age numbers the median age of the data (28 years) and then I filled the embarked data with the mode: Southampton. All of these steps were verified before moving on. 
+
+I had to convert the Embarked cleaning code from markdown to code since it didn't execute the first time which was a good thing to know how to do for the future. I also left the computer for a while and df was no longer defined, so I simply ran all cells to fix that issue. 
+
+I ran survival statistics on the cleaned data and found: 38% overall survival. 74% female survived and 19% males survived. By class the survival rates: 63% for 1st, 47% for 2nd, and 24% for third. Grouping by sex and class revealed that class effect was bigger for women than for men. A third-class woman had a higher percentage of survival than a first class man. This is an interaction effect, the variables’ effects depend on each other. 
+
+The three lessons today were: Cleaning is more about judgment then syntax, notebooks are memory-transient, and two-way groupby reveals information that one-way groupby hides. The three cleaning decisions made today each depended on severity and context of the missingness, not on a rule. For the notebook lesson, the file saves the code but the kernel resets wipe the data. Cell numbers tell you what's actually been run. Lastly, additive summaries would have missed the pattern that class matters more for women than for men on the Titanic. 
 
 
