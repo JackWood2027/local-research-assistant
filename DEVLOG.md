@@ -170,4 +170,18 @@ I ran survival statistics on the cleaned data and found: 38% overall survival. 7
 
 The three lessons today were: Cleaning is more about judgment then syntax, notebooks are memory-transient, and two-way groupby reveals information that one-way groupby hides. The three cleaning decisions made today each depended on severity and context of the missingness, not on a rule. For the notebook lesson, the file saves the code but the kernel resets wipe the data. Cell numbers tell you what's actually been run. Lastly, additive summaries would have missed the pattern that class matters more for women than for men on the Titanic. 
 
+## 2026-08-11 — [Phase 4] AI fundamentals: how LLMs work
+
+Today was about learning concepts. First off, an LLM is not a system that accesses sources which lots of people think. It is a machine that produces a probability distribution over its vocabulary, samples a token, adds it to the response, and repeats. 
+
+Tokens are chunks of texts (about 3-4 characters) and not full words. Vocabulary size is 50,000-100,000 possible tokens which is the sample space for the probability distribution. 
+
+Temperature plus the sharpness of the probability distribution controls response variation. Identical responses to a prompt happens when the temperature is 0 or when the distribution has only one token with meaningful probability.
+
+Embeddings are vectors of numbers that represent how related words, phrases, and paragraphs are through comparison. Words with similar meanings get similar vectors which are learned from context and not programming. For example, cat and kitten have similar embeddings because they appear in a similar context in training text. 
+
+Attention is the weighted combination of previous token embeddings that are computed on the fly. It determines what tokens or words are the most important or relevant to respond to. This solves the "fading memory" problem of older models, now all previous tokens are equally accessible. 
+
+Training is the process that gives parameters their values. It shows the model text with a word covered up, and it predicts that covered word. Then it measures the error, adjusts the parameters slightly to reduce the error, then that is repeated billions of times. Inference produces output using frozen parameters, unlike training which is the adjustment of the parameters. 
+
 
