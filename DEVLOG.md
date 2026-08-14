@@ -184,4 +184,23 @@ Attention is the weighted combination of previous token embeddings that are comp
 
 Training is the process that gives parameters their values. It shows the model text with a word covered up, and it predicts that covered word. Then it measures the error, adjusts the parameters slightly to reduce the error, then that is repeated billions of times. Inference produces output using frozen parameters, unlike training which is the adjustment of the parameters. 
 
+## 2026-08-14 — [Phase 4.5] The Quantization Lab: defending the hardware from first principles
+
+Today was a math session, unlike the previous concept session. The goal was to figure out what is the correct size of memory for this project through reasoning and not just trusting someone else's decision. 
+
+The formula used was pretty simple: Memory required to hold a model equals parameter count times bytes per parameter. There are different precisions that use different amounts of memory per parameter. FP16 uses 2 bytes, INT8 uses 1, and INT4 uses .5. This is why it is called the "quantization lab" — the different numerical precisions trade accuracy for memory savings.
+
+Here are the results. For a 7B model, FP16 uses 14 GB (or 14 billion bytes), INT8 uses 7 GBB, and INT4 uses 3.5 GB. 13B uses 26 GB for FP16, 13 GB for INT8, and 6.5 GB for INT4. 30B uses 60 GB for FP16, 30 GB for INT8, and 15 GB for INT 4. Lastly, 70B uses 140 GB for FP16, 70 GB for INT8, and 35 GB for INT4.
+
+There is more memory than just the raw weight however. Actual VRAM usage includes KV cache (attention), activations (intermediate computation), and system overhead. The rough estimate is 1.5 times the raw weight size. 
+
+The real estate appraiser (end user 1), will be using the RTX 3090 Ti with 24 GB of VRAM. Looking at the results above, the largest total is the 30B at INT4. Bigger models would require more VRAm than the card provides; smaller models would waste its capacity. Therefore 24 GB VRAM is the correct amount for a 30B ceiling. 
+
+The researcher (end user 2) has a M-series Mac with 128 GB of memory. This allows a larger budget, with the 70B at INT8 being the one that fits comfortably (105 GB with overhead). The Mac’s architecture is specifically well-suited to LLM inference because it doesn’t force a separate VRAM constraint. This is why the researcher's use case (long-context writing assistance) maps to the Mac target rather than to a PC target. 
+
+The memory ratio between a 30B model at FP16 versus INT4 is 4x. Without quantization, a 30B model wouldn't fit on any consumer GPU. With INT4 quantization, it runs on a 700 dollar used RTX 3090. Quantization isn't an optimization, it's the reason local LLm inference on consumer hardware is possible. 
+
+This session gave me the ability to make a defensible argument on why I chose 24 GB VRAM over other choices from this math today. I also now have a framework that generalizes what a larger chip would enable through the equation today. I also gained some real intuition for the local LLM ecosystem. Understanding quantization explains why Ollama's file format (GGUF) is built around it, why model download options are labeled with quantization tiers (q4_K_M, q8_0), and why the Mac's unified memory is a different hardware architecture — not just more memory, but memory the GPU can actually use.
+
+The big lesson I had today was simple math can make architectural decisions defensible. Hearing the word "quantization" might make it seem like the math was high level, but it was just simple multiplication and division that gave me defense for my decisions. 
 
