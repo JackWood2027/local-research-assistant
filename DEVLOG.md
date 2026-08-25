@@ -204,3 +204,17 @@ This session gave me the ability to make a defensible argument on why I chose 24
 
 The big lesson I had today was simple math can make architectural decisions defensible. Hearing the word "quantization" might make it seem like the math was high level, but it was just simple multiplication and division that gave me defense for my decisions. 
 
+Today was about the transition from understanding embeddings and cosine concepts to using them in code. I proved the concepts through a small RAG retrieval system. 
+
+A vector database is a specialized data store designed to store embeddings and find the most similar ones to a query, quickly, at scale. Regular SQL databases can't do this efficiently because their indexes are built for exact matches and range queries on scalar values and not high-dimensional similarity search. Vector databases trade some accuracy for massive speed gains, using index structures like HNSW to find approximate nearest neighbors in logarithmic time instead of linear time. Qdrant was selected for this project because it is open source, fast, mature ecosystem, and local-friendly. 
+
+I installed Qdrant-client and sentence-transformers in the project venv. Loaded the all-MiniLM-L6-v2 embedding model (384 dimensions, small and fast). Three samples were encoded into vectors, created a Qdrant collection configured for 384-dim vectors with cosine distance, inserted the embeddings as points, then queried with a new question and retrieved the most similar stored sentences. 
+
+The query was “Where does the cat rest?”, a sentence not stored in the database. The three stored sentences were: “The cat sat on a mat,” “A feline rested on the rug,” and “The stock market crashed yesterday.” The similarity scores came back as .5431, .5062, .0730 respectively. Even with no words in common, the first two sentences had a very similar score. Keyword search would have missed this, but embedding search caught that these words are synonyms, and the training data showed this pattern. This is how the RAG will work for end user 1’s use case.
+
+The first debugging moment was a typo which was an easy fix, and the second one was also a typo but the type was lien instead of len which are both real words. Fixing both of these was simple and I know that the last line of Python error tells me what's wrong. 
+
+I now have a RAG mental model. All RAG systems on earth is a scaled-up version from what I did today. Documents turn into chunks, then embeddings, then it is stored in a vector database. Query, then embedding with the same model, then searched against the stored vectors. Top-K results returned into their payloads. Payloads inserted into an LLM prompt as retrieved context. The only difference is scale. 
+
+There were two lessons that landed today. The feline/cat result proved this on real numbers. Keyword search operates on exact spelling; embedding search operates on meaning learned from training data patterns. This is why RAG is worth building over a simple SQL search of documents.The Phase 4 concepts weren't abstract — they showed up as running code. Every piece of today's session mapped directly to something from Phase 4: cosine similarity, high-dimensional vectors, the distributional hypothesis (why similar words end up with similar embeddings). The math and the code are the same thing, just at different levels of abstraction.
+ 
