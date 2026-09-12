@@ -218,3 +218,26 @@ I now have a RAG mental model. All RAG systems on earth is a scaled-up version f
 
 There were two lessons that landed today. The feline/cat result proved this on real numbers. Keyword search operates on exact spelling; embedding search operates on meaning learned from training data patterns. This is why RAG is worth building over a simple SQL search of documents.The Phase 4 concepts weren't abstract — they showed up as running code. Every piece of today's session mapped directly to something from Phase 4: cosine similarity, high-dimensional vectors, the distributional hypothesis (why similar words end up with similar embeddings). The math and the code are the same thing, just at different levels of abstraction.
  
+## — [Phase 6] Real document RAG: end-to-end pipeline on the Selling Guide
+
+The purpose of today was the transition from the toy RAG examples (3 sentences) to a real one, with loading, chunking, embedding, storing, and retrieving against an actual 1,185-page document. 
+
+The document was the Fannie Mae Selling Guide via Firefox to ~/Downloads/. This is a relevant document for this project because it is what real estate appraisers reference for FNMA compliance questions in QC review. 
+
+Installed pypdf 6.16.2 via pip. Loaded the PDF and extracted text from all pages which took about 8 minutes. The total was 2,516,159 characters. The first 500 characters looked clean and readable, however this turned out to be misleading. 
+
+Caching was set up to save the extracted text to disk so subsequent sessions could skip the long extraction. The first attempt failed with an empty file. Kernel restart wiped the extracted text from memory, meaning full re-extraction was required. The second attempt succeeded — saved to selling_guide.txt after verifying the full text was fully loaded first. The lesson here was verifying before saving.  
+
+A chunk_text was written that splits text into overlapping pieces. Default parameters: 1,000 characters per chunk, 100 characters overlap between adjacent chunks. Applied to the full document which was 2,796 chunks total. Overlap matters because information right at chunk boundaries would otherwise get split poorly. 10% overlap smooths this out at low redundancy cost. 
+I loaded the MiniLM embedding model next. Encoded all 2,796 with show_progress_bar=True. Embedding took a second which is the first real work for the GPU in this project. On CPU this would have been minutes. 
+
+The next step was switching the vector database to disk. I created a collection called selling_guide for 384-dim vectors with cosine distance. Inserted all 2,796 embeddings as points, each with payload containing the original text plus its index in the document. 
+
+Next I queried the system with “What are the requirements for appraisal photos?” — a realistic appraisal question. Retrieval returned top-5 semantically similar chunks in milliseconds. Reading the results confirmed they were on-topic and actually about photo requirements from the Selling Guide, not random chunks. Complete end-to-end pipeline working on a real 1,185 page industry document. 
+
+Reviewing the retrieved chunks surfaced a real problem I’d missed in the first 500 character check. Pypdf was dropping leading letters from certain words. Examples: “he data” , “terior” instead of interior. Pattern was systematic, not random which means it was probably a font rendering issue pypdf couldn’t handle cleanly. 
+
+The retrieval still worked despite this. Embeddings are robust enough to match semantic content even with a few corrupted words. But this would matter for production use: if the LLM in Phase 7 gets asked to answer using these chunks, its answers will inherit some of the noise. So I accepted the noise over switching to a better extractor. 
+
+The rest of Phase 6 is: Better PDF extraction to fix the leading-letter drops, better embeddings model for higher retrieval quality, LlamaIndex framework to clean up the hand-rolled pipeline, and lastly reranking step to improve top-K result quality before Phase 7’s LLM sees them. 
+
