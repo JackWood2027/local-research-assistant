@@ -241,3 +241,22 @@ The retrieval still worked despite this. Embeddings are robust enough to match s
 
 The rest of Phase 6 is: Better PDF extraction to fix the leading-letter drops, better embeddings model for higher retrieval quality, LlamaIndex framework to clean up the hand-rolled pipeline, and lastly reranking step to improve top-K result quality before Phase 7’s LLM sees them. 
 
+2026-09-22 — [Phase 6] LlamaIndex refactor: from hand-rolled to framework
+
+Today was refactoring the RAG pipeline onto LlamaIndex which is the standard framework for RAG in Python. Same input document (Fannie Mae Selling Guide), same embedding model (MiniLM), same vector database (Qdrant), same query. Different code path, one built by hand across dozens of lines, one built through a unified framework. 
+
+The hand rolled version works, but every stage is a separate library glued together with custom Python. Swapping any piece means rewriting the glue. LlamaIndex provides a unified API across all stages, so components become swappable in one line. Building it by hand first was pedagogically necessary, the framework would have looked like magic without the mental model of what each stage does. 
+
+I installed three packages: llama-index (core framework), llama-index-vector-stores-qdrant (Qdrant integration), llama-index-embeddings-huggingface. LlamaIndex uses a plugin architecture — the core doesn’t ship with every possible vector store or embedding provider; you install the ones you need. This keeps the base install lightweight and forces explicit component selection. About 200-500 MB total install including transitive dependencies. 
+
+Wrapped the cached Selling Guide text in LlamaIndex’s standard container for source content. Configured HuggingFaceEmbedding pointing to MiniLM. Created a QdrantVector Store wrapping a fresh persistent Qdrant client. Set the global Settings.embed_model so downstream code uses MiniLM by default. Then one method call handled chunking, embedding all chunks, and inserting them into Qdrant. 
+
+The same 2.5M character document, but the hand-rolled version produced 2,796 chunks while LlamaIndex produced 739 chunks. This is a real design difference. The hand-rolled has 1,000 characters per chunk, hard boundaries. LlamaIndex default has sentence aware chunking at around 1,024 tokens per chunk (roughly 4,000 characters), preserving sentence boundaries. The smaller chunks equal more precise retrieval but risk splitting sentences mid-thought. Larger chunks equals more context per chunk but potentially lower precision. Neither universally better. For dense technical documents like the Selling Guide, larger chunks may actually work better because a single question often spans multiple related sentences. 
+
+I ran the same query as last session: “What are the requirements for appraisal photos?” I had to make sure that it would not send results to an LLM for synthesis. This is Phase 7 territory. Retriever-only mode does pure similarity search, matching what the hand-rolled version did. The top 5 scores were in the .48-.53 range, similar to the hand-rolled version’s range. Reading the top result confirmed it was actually about appraisal photo requirements, not something adjacent. Same retrieval quality but less code. 
+
+The hand-rolled version’s ingestion plus retrieval path was about 40 lines across multiple cells. The LlamaIndex version was about 10 lines. They do the same thing but the framework just organizes the same operations into cleaner abstractions. 
+
+The last two improvements before phase 7 is reranking the top-K retrieval results to promote the most relevant ones. The other improvement is better PDF extraction. Both will be quick. 
+
+The lessons from today were is the right time to switch to a framework after you understand what it does, and comparable results is the win with different pipelines. 
