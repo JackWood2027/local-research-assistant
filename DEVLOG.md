@@ -269,7 +269,8 @@ Reranking functions as a retrieval approach. First, quick vector similarity look
 The MiniLM embedding model in my setup works by encoding queries and text chunks into vectors independently, then measuring them via cosine similarity. Since passage embeddings get generated ahead of time, this stays fast. A cross-encoder reranker takes a different approach by feeding the prompt and retrieved text together into one pass to output a direct relevance rating. This gives better accuracy since the attention layers evaluate specific query-document relationships rather than just matching static vector summaries. The trade-off is performance: each candidate pair requires a full forward pass at search time.
 Installed the LlamaIndex integration for sentence-transformers cross-encoder rerankers. Used cross-encoder/ms-marco-MiniLM-L-6-v2 as the reranker model, a widely used cross-encoder trained on the MS MARCO question answering dataset. This configured with top number equals 5, so the reranker returns the top 5 after re-scoring. This was a 90MB download from HuggingFace. 
 
-I ran the same question from last time — “What are the requirements for appraisal photos?” — but included the reranker this time around. Configured similarity top-K to 20 so the vector search pulled a bigger set of candidates for second-stage scoring.
+I ran the same question from last time — “What are the requirements for appraisal photos?” — but included the reranker this time around. 
+Then I  configured similarity top-K to 20 so the vector search pulled a bigger set of candidates for second-stage scoring.
 Without the reranker, the vector search picked passages touching on source data, manufactured housing rules, and loan criteria with scores around .48-.53. These were related topics, but not actually about photo rules.
 With the reranker enabled, the manufactured home passage jumped to first place with a 1.5098 score. The remaining four outputs dropped to near zero or negative values, showing that the cross-encoder correctly flagged that those choices lacked direct relevance.
 The feature functioned as intended, yet the final answers didn't improve much since the initial vector pass missed the target passages. Rerankers can only filter what gets retrieved initially; if relevant text isn't in the candidate pool, re-scoring can't fix it.
@@ -278,3 +279,28 @@ Two key takeaways emerged from today's testing: Reranking is effective given qua
 Upgrading text extraction remains the remaining task on the checklist—resolving the systematic single-character clipping like “he data” or “terior” by swapping pypdf out for PyMuPDF or pdfplumber. This means executing a full re-extraction pass (spending another 8 minutes) and updating the stored text on disk. It is not holding things up, however. The entire setup is operational end-to-end, and the cross-encoder is noticeably boosting search precision whenever solid context is present.
 The next step is Phase 7—setting up local inference via Ollama. This is when the entire architecture shifts from returning retrieved context to synthesizing actual written responses.
 Evaluating multiple queries is essential for uncovering true functionality. Stopping after the photo test would have suggested that second-stage scoring yields no benefit, leading to an incorrect takeaway. The subsequent query demonstrated that the cross-encoder operates effectively when given relevant candidates; the initial prompt simply lacked strong retrieval candidates to prioritize. A single data point fails to validate a component—multiple distinct tests are required to observe true systemic behavior, mirroring the need for baseline variation in experimental setups.A component can function flawlessly according to specification without resolving the active bottleneck. For the photo prompt, the cross-encoder accurately rated the retrieved candidates and flagged them as poor matches. Those negative ratings represented expected behavior rather than an error—the model was accurately indicating that prior vector retrieval missed the mark. The underlying limitation was situated upstream. Pinpointing precisely where issues arise within a pipeline—rather than blaming whichever module surfaced the error—is a fundamental technical skill.
+
+## 2026-11-05 — [Phase 7] Ollama install and first local inference
+
+Ollama was installed today, a 14B model, and I generated my first locally-inferred answer on this hardware. There is no API, cloud, or data leaving this machine. Everything from the Phase 1 hardware spec through the Quantization Lab through the CUDA install through today’s Ollama setup led to this moment. 
+
+Ollama is a local LLM inference server. It runs as a background process on this PC, and it serves models over a local HTTP endpoint, handles model downloads, caching, GPU memory loading, and unloading. This matches the project’s privacy necessity requirement. Local inference isn’t just a technical choice, it’s the reason this project exists. 
+
+Ollama was picked over alternatives because it is mature, widely used, works the same on Linux and macOS, simple API, and open source. These are the factors that have helped me make every decision so far. 
+
+The install took about 2 minutes, then I downloaded the binary, set up a systemd service, and detected my RTX 3090 Ti automatically. The install dropped the integrated GPU on my Ryzen 9 9950X and correctly selected the dedicated 3090 Ti as the inference device. 
+
+There were three checks for the install. One was ollama –version which returned .40.14, a recent stable release. Next was systemctl status ollama showed Active: active (running) — service is managed by systemd, starts on boot. Lastly was journalctl -u ollama –no-pager | grep -i gpu which worked. 
+The GPU check was the one that mattered. WIthout CUDA detection confirmed, the 14B inference would be run on CPU which would be unusably slow. 
+
+The model choice was easy because of the Quantization Lab. At INT4 quantization, each parameter takes .5 bytes. With about 24 GB VRAM available, 13B fits comfortably and 30B fits but with almost no room. 
+I picked qwen2.5:14b for today, a 14B parameter model from Alibab, strong on reasoning, 9 GB download. Reasoning for picking 14B over 30B for the first test was it had a smaller download, faster to verify the stack works end to end, leaves headroom to scale up once the pipeline is proven. 
+
+The actual VRAM usage was higher than pure weight math would predict. The extra comes from KV cache, runtime overhead, and Ollama’s default 32,768-token context size. Still well within the 24 GB ceiling. 
+
+I asked the model to explain cross-encoder rerankers in one paragraph, a topic I am familiar with. Tokens streamed without lag and the answer was accurate. This proved the infrastructure worked. 
+
+This session gave me a working inference engine which is what this whole project has been building towards. The phase 4.5 math predicted reality, and reading output is the engineering skill. The GPU verification step mattered because without it, I could have ended up running on CPU without knowing it. 
+
+The lesson from today was the math that picked my model. It predicted my VRAM usage, and justified my hardware spec. Everything downstream depends on numbers that I derived, not read off a spec sheet. The hard work I did earlier made things during these later phases easier. 
+
